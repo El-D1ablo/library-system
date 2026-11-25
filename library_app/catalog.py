@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from library_app.models import Book
 
 MIN_YEAR = 1450  # первые печатные книги
+SORT_FIELDS = ("title", "author", "year")
 
 
 class CatalogError(ValueError):
@@ -78,3 +79,46 @@ class Catalog:
         book = Book(isbn=isbn, title=title, author=author, year=year)
         self._books[isbn] = book
         return book
+
+    def list_books(self, sort_by: str = "title") -> List[Book]:
+        """Возвращает список всех книг каталога, отсортированный по полю.
+
+        Args:
+            sort_by: Поле сортировки: "title" (по названию, по умолчанию),
+                "author" (по автору) или "year" (по году издания).
+
+        Returns:
+            Новый список книг; изменение списка не меняет каталог.
+
+        Raises:
+            CatalogError: если указано неизвестное поле сортировки.
+        """
+        if sort_by not in SORT_FIELDS:
+            raise CatalogError(
+                f"Сортировка возможна только по полям: {', '.join(SORT_FIELDS)}")
+        if sort_by == "year":
+            key = lambda book: (book.year, book.title.lower())
+        else:
+            key = lambda book: getattr(book, sort_by).lower()
+        return sorted(self._books.values(), key=key)
+
+
+def format_books(books: List[Book]) -> str:
+    """Формирует таблицу книг для вывода в консоль.
+
+    Args:
+        books: Список книг для вывода.
+
+    Returns:
+        Текст таблицы с колонками №, ISBN, название, автор, год, статус;
+        если список пуст — сообщение «Каталог пуст».
+    """
+    if not books:
+        return "Каталог пуст"
+    header = f"{'№':>3}  {'ISBN':<13}  {'Название':<30}  {'Автор':<20}  {'Год':>4}  Статус"
+    lines = [header, "-" * len(header)]
+    for number, book in enumerate(books, start=1):
+        status = "в наличии" if book.available else "выдана"
+        lines.append(f"{number:>3}  {book.isbn:<13}  {book.title[:30]:<30}  "
+                     f"{book.author[:20]:<20}  {book.year:>4}  {status}")
+    return "\n".join(lines)
