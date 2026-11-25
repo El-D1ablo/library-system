@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Виртуальное окружение
+venv/
+.venv/
+env/
+
+# Настройки и секреты
+.env
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# Данные программы
+data/*.json
+
+# ОС
+Thumbs.db
+.DS_Store
+desktop.ini
